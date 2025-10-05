@@ -1,0 +1,38 @@
+{
+  "name": "flutter-hiring-platform",
+  "version": "1.0.0",
+  "description": "Flutter Developer Hiring Platform - Full Stack Application",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install && cd ../admin && npm install",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:admin": "cd admin && npm run dev",
+    "build:all": "cd backend && npm run build && cd ../frontend && npm run build && cd ../admin && npm run build",
+    "start:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/flutter-hiring-platform.git"
+  },
+  "keywords": [
+    "flutter",
+    "hiring",
+    "recruitment",
+    "nextjs",
+    "nestjs",
+    "mongodb",
+    "fullstack"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
