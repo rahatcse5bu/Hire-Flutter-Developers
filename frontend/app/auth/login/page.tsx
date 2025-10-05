@@ -21,33 +21,14 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed')
-      }
-
-      login(data.token, data.user)
-      toast.success('Welcome back!')
+      const success = await login(formData.email, formData.password)
       
-      // Redirect based on user role
-      if (data.user.role === 'admin') {
-        window.location.href = 'http://localhost:3001' // Admin dashboard
-      } else if (data.user.role === 'recruiter') {
-        router.push('/recruiter/dashboard')
-      } else {
-        router.push('/developer/dashboard')
+      if (success) {
+        // Redirect based on user role - will be handled by AuthContext
+        router.push('/dashboard')
       }
     } catch (error: any) {
-      toast.error(error.message || 'Login failed')
+      // Error handling is done in AuthContext
     } finally {
       setIsLoading(false)
     }

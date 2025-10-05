@@ -5,30 +5,17 @@ import { useQuery } from 'react-query'
 import { SearchBar } from '../../components/search/SearchBar'
 import { Button } from '../../components/ui/Button'
 import Link from 'next/link'
+import { JobService } from '../../lib/api/jobs'
+import type { Job } from '../../lib/api/types'
 
-interface Job {
-  _id: string
-  title: string
-  company: string
+interface JobFilters {
+  page: number
+  limit: number
+  search: string
   location: string
   type: string
   experienceLevel: string
-  salaryMin: number
-  salaryMax: number
-  currency: string
-  requiredSkills: string[]
-  createdAt: string
-  applicationCount: number
-  viewCount: number
-}
-
-const fetchJobs = async (filters: any): Promise<{ jobs: Job[], total: number, totalPages: number }> => {
-  const params = new URLSearchParams(filters)
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch jobs')
-  }
-  return response.json()
+  remoteType: string
 }
 
 export default function JobsPage() {
@@ -44,7 +31,7 @@ export default function JobsPage() {
 
   const { data, isLoading, error } = useQuery(
     ['jobs', filters],
-    () => fetchJobs(filters),
+    () => JobService.searchJobs(filters),
     {
       keepPreviousData: true,
     }
@@ -158,7 +145,7 @@ export default function JobsPage() {
                   Try Again
                 </Button>
               </div>
-            ) : data?.jobs?.length === 0 ? (
+            ) : data?.data?.data?.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 mb-4">No jobs found matching your criteria</p>
                 <Button onClick={() => setFilters({ page: 1, limit: 20, search: '', location: '', type: '', experienceLevel: '', remoteType: '' })}>

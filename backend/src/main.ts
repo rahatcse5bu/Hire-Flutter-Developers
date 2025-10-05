@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
-import compression from 'compression';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +16,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000', // Frontend
-      'http://localhost:3001', // Admin
+      'http://localhost:3001', // Admin (old port)
+      'http://localhost:3002', // Admin (new port)
       process.env.FRONTEND_URL,
       process.env.ADMIN_URL,
     ],

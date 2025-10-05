@@ -1,51 +1,74 @@
 'use client'
 
 import { useState } from 'react'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: 'developer' | 'recruiter'
-  subscription: string
-  createdAt: string
-  isActive: boolean
-}
+import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { toast } from 'react-hot-toast'
+import { adminService, type AdminUser } from '../../lib/api/admin.service'
+import AdminLayout from '../../components/AdminLayout'
 
 export default function UsersPage() {
+  const queryClient = useQueryClient()
   const [filter, setFilter] = useState<'all' | 'developer' | 'recruiter'>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const limit = 20
 
-  // Mock data - replace with API call
-  const users: User[] = [
+  // Fetch users with real API
+  const { data, isLoading, error } = useQuery(
+    ['admin-users', { page: currentPage, limit, search: searchTerm, role: filter === 'all' ? undefined : filter }],
+    () => adminService.getUsers({ 
+      page: currentPage, 
+      limit, 
+      search: searchTerm || undefined,
+      role: filter === 'all' ? undefined : filter
+    }),
     {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'developer',
-      subscription: 'Basic',
-      createdAt: '2024-01-15',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@company.com',
-      role: 'recruiter',
-      subscription: 'Professional',
-      createdAt: '2024-01-10',
-      isActive: true
+      keepPreviousData: true,
     }
-  ]
+  )
 
-  const filteredUsers = users.filter(user => {
-    const matchesFilter = filter === 'all' || user.role === filter
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesFilter && matchesSearch
-  })
+  // Toggle user status mutation
+  const toggleStatusMutation = useMutation(
+    (userId: string) => adminService.toggleUserStatus(userId),
+    {
+      onSuccess: () => {
+        toast.success('User status updated successfully')
+        queryClient.invalidateQueries('admin-users')
+      },
+      onError: () => {
+        toast.error('Failed to update user status')
+      }
+    }
+  )
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation(
+    (userId: string) => adminService.deleteUser(userId),
+    {
+      onSuccess: () => {
+        toast.success('User deleted successfully')
+        queryClient.invalidateQueries('admin-users')
+      },
+      onError: () => {
+        toast.error('Failed to delete user')
+      }
+    }
+  )
+
+  const handleToggleStatus = (userId: string) => {
+    if (window.confirm('Are you sure you want to change this user\'s status?')) {
+      toggleStatusMutation.mutate(userId)
+    }
+  }
+
+  const handleDeleteUser = (userId: string) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      deleteUserMutation.mutate(userId)
+    }
+  }
 
   return (
+    <AdminLayout>
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
@@ -126,52 +149,107 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === 'developer' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.subscription}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.createdAt}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button className="text-primary-600 hover:text-primary-900">Edit</button>
-                      <button className={user.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"}>
-                        {user.isActive ? 'Suspend' : 'Activate'}
-                      </button>
-                    </div>
+              {isLoading ? (
+                // Loading skeleton
+                [...Array(5)].map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </td>
+                  </tr>
+                ))
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-red-500">
+                    Error loading users
                   </td>
                 </tr>
-              ))}
+              ) : data?.users?.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                data?.users?.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.role === 'developer' 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      N/A
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                  </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        <button 
+                          className="text-primary-600 hover:text-primary-900 disabled:opacity-50"
+                          disabled={toggleStatusMutation.isLoading}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(user.id)}
+                          disabled={toggleStatusMutation.isLoading}
+                          className={`${user.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"} disabled:opacity-50`}
+                        >
+                          {toggleStatusMutation.isLoading ? 'Loading...' : (user.isActive ? 'Suspend' : 'Activate')}
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={deleteUserMutation.isLoading}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                        >
+                          {deleteUserMutation.isLoading ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }
