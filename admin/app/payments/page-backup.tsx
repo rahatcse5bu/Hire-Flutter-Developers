@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import AdminLayout from '../../components/AdminLayout'
 
 export default function PaymentsPage() {
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Payment Management</h1>
         <div className="flex gap-2">
@@ -81,7 +79,6 @@ export default function PaymentsPage() {
           </table>
         </div>
       </div>
-      </div>
-    </AdminLayout>
+    </div>
   )
 }

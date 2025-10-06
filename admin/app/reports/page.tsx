@@ -1,15 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-
-interface ReportTemplate {
-  id: string
-  name: string
-  description: string
-  category: 'users' | 'jobs' | 'revenue' | 'performance' | 'system'
-  lastGenerated?: string
-  downloadCount: number
-}
+import AdminLayout from '../../components/AdminLayout'
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<string>('')
@@ -17,7 +9,15 @@ export default function ReportsPage() {
   const [reportFormat, setReportFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const reportTemplates: ReportTemplate[] = [
+  // Mock data for reports
+  const stats = {
+    totalReports: 245,
+    completedReports: 232,
+    generatingReports: 3,
+    failedReports: 10
+  }
+
+  const reportTemplates = [
     {
       id: 'user-analytics',
       name: 'User Analytics Report',
@@ -41,30 +41,36 @@ export default function ReportsPage() {
       category: 'revenue',
       lastGenerated: '2024-01-15T09:15:00Z',
       downloadCount: 78
+    }
+  ]
+
+  const reports = [
+    {
+      id: '1',
+      name: 'Revenue Summary',
+      description: 'Monthly revenue breakdown',
+      status: 'completed',
+      createdAt: '2024-01-15',
+      fileSize: '2.4 MB',
+      dateRange: 'Dec 2023 - Jan 2024'
     },
     {
-      id: 'platform-performance',
-      name: 'Platform Performance',
-      description: 'System uptime, response times, and technical performance metrics',
-      category: 'performance',
-      lastGenerated: '2024-01-15T08:00:00Z',
-      downloadCount: 23
+      id: '2',
+      name: 'User Analytics',
+      description: 'User engagement metrics',
+      status: 'completed',
+      createdAt: '2024-01-14',
+      fileSize: '1.8 MB',
+      dateRange: 'Jan 2024'
     },
     {
-      id: 'subscription-analysis',
-      name: 'Subscription Analysis',
-      description: 'Subscription trends, churn rates, and upgrade/downgrade patterns',
-      category: 'revenue',
-      lastGenerated: '2024-01-13T14:45:00Z',
-      downloadCount: 56
-    },
-    {
-      id: 'security-audit',
-      name: 'Security Audit Report',
-      description: 'Security events, login attempts, and system vulnerabilities',
-      category: 'system',
-      lastGenerated: '2024-01-12T11:30:00Z',
-      downloadCount: 12
+      id: '3',
+      name: 'Job Performance',
+      description: 'Job posting analytics',
+      status: 'generating',
+      createdAt: '2024-01-13',
+      fileSize: null,
+      dateRange: 'Jan 2024'
     }
   ]
 
@@ -94,14 +100,15 @@ export default function ReportsPage() {
   }
 
   const quickStats = [
-    { label: 'Total Reports Generated', value: '1,234', change: '+12%' },
-    { label: 'This Month Downloads', value: '456', change: '+18%' },
-    { label: 'Average Generation Time', value: '2.3s', change: '-5%' },
-    { label: 'Storage Used', value: '2.4 GB', change: '+8%' }
+    { label: 'Total Reports', value: stats.totalReports || '0', change: '+12%' },
+    { label: 'Completed', value: stats.completedReports || '0', change: '+18%' },
+    { label: 'In Progress', value: stats.generatingReports || '0', change: '-5%' },
+    { label: 'Failed', value: stats.failedReports || '0', change: '+8%' }
   ]
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
         <div className="flex gap-2">
@@ -292,34 +299,47 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {[
-                { name: 'Revenue Summary', dateRange: 'Dec 1-31, 2023', generated: '2024-01-15', format: 'PDF', size: '2.4 MB' },
-                { name: 'User Analytics', dateRange: 'Nov 1-30, 2023', generated: '2024-01-14', format: 'Excel', size: '1.8 MB' },
-                { name: 'Job Performance', dateRange: 'Q4 2023', generated: '2024-01-13', format: 'CSV', size: '856 KB' },
-                { name: 'Platform Performance', dateRange: 'Dec 1-31, 2023', generated: '2024-01-12', format: 'PDF', size: '3.1 MB' }
-              ].map((report, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {report.name}
+              {reports.map((report) => (
+                <tr key={report.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{report.name}</div>
+                      <div className="text-sm text-gray-500">{report.description}</div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.dateRange}
+                    {report.dateRange || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(report.generated).toLocaleDateString()}
+                    {report.createdAt}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {report.format}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      report.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      report.status === 'generating' ? 'bg-blue-100 text-blue-800' :
+                      report.status === 'failed' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {report.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.size}
+                    {report.fileSize || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
-                      <button className="text-primary-600 hover:text-primary-900">Download</button>
-                      <button className="text-blue-600 hover:text-blue-900">Share</button>
+                      {report.status === 'completed' && (
+                        <>
+                          <button className="text-primary-600 hover:text-primary-900">Download</button>
+                          <button className="text-blue-600 hover:text-blue-900">Share</button>
+                        </>
+                      )}
+                      {report.status === 'generating' && (
+                        <button className="text-yellow-600 hover:text-yellow-900">Cancel</button>
+                      )}
+                      {report.status === 'failed' && (
+                        <button className="text-green-600 hover:text-green-900">Retry</button>
+                      )}
                       <button className="text-red-600 hover:text-red-900">Delete</button>
                     </div>
                   </td>
@@ -329,6 +349,7 @@ export default function ReportsPage() {
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }

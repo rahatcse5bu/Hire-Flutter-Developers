@@ -1,1 +1,6 @@
 node_modules
+admin/.next
+admin/.vercel
+backend/.next
+backend/.vercel
+frontend/.next

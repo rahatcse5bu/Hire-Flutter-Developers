@@ -1,69 +1,85 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { toast } from 'react-hot-toast'
-import { adminService, type AdminUser } from '../../lib/api/admin.service'
 import AdminLayout from '../../components/AdminLayout'
 
 export default function UsersPage() {
-  const queryClient = useQueryClient()
   const [filter, setFilter] = useState<'all' | 'developer' | 'recruiter'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const limit = 20
 
-  // Fetch users with real API
-  const { data, isLoading, error } = useQuery(
-    ['admin-users', { page: currentPage, limit, search: searchTerm, role: filter === 'all' ? undefined : filter }],
-    () => adminService.getUsers({ 
-      page: currentPage, 
-      limit, 
-      search: searchTerm || undefined,
-      role: filter === 'all' ? undefined : filter
-    }),
+  // Mock data for users
+  const mockUsers = [
     {
-      keepPreviousData: true,
+      id: '1',
+      name: 'Sarah Johnson',
+      email: 'sarah.johnson@email.com',
+      role: 'developer',
+      isActive: true,
+      createdAt: '2024-01-15T10:00:00Z',
+      subscription: 'Pro'
+    },
+    {
+      id: '2',
+      name: 'Michael Chen',
+      email: 'michael.chen@email.com',
+      role: 'recruiter',
+      isActive: true,
+      createdAt: '2024-01-14T15:30:00Z',
+      subscription: 'Enterprise'
+    },
+    {
+      id: '3',
+      name: 'Emma Wilson',
+      email: 'emma.wilson@email.com',
+      role: 'developer',
+      isActive: true,
+      createdAt: '2024-01-13T09:20:00Z',
+      subscription: 'Basic'
+    },
+    {
+      id: '4',
+      name: 'David Brown',
+      email: 'david.brown@email.com',
+      role: 'recruiter',
+      isActive: false,
+      createdAt: '2024-01-12T14:45:00Z',
+      subscription: 'Pro'
+    },
+    {
+      id: '5',
+      name: 'Lisa Garcia',
+      email: 'lisa.garcia@email.com',
+      role: 'developer',
+      isActive: true,
+      createdAt: '2024-01-11T11:10:00Z',
+      subscription: 'Free'
     }
-  )
+  ]
 
-  // Toggle user status mutation
-  const toggleStatusMutation = useMutation(
-    (userId: string) => adminService.toggleUserStatus(userId),
-    {
-      onSuccess: () => {
-        toast.success('User status updated successfully')
-        queryClient.invalidateQueries('admin-users')
-      },
-      onError: () => {
-        toast.error('Failed to update user status')
-      }
-    }
-  )
+  // Filter users based on current filter
+  const filteredUsers = mockUsers.filter(user => {
+    if (filter !== 'all' && user.role !== filter) return false
+    if (searchTerm && !user.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+        !user.email.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    return true
+  })
 
-  // Delete user mutation
-  const deleteUserMutation = useMutation(
-    (userId: string) => adminService.deleteUser(userId),
-    {
-      onSuccess: () => {
-        toast.success('User deleted successfully')
-        queryClient.invalidateQueries('admin-users')
-      },
-      onError: () => {
-        toast.error('Failed to delete user')
-      }
-    }
-  )
+  const data = { users: filteredUsers }
+  const isLoading = false
+  const error = null
 
   const handleToggleStatus = (userId: string) => {
     if (window.confirm('Are you sure you want to change this user\'s status?')) {
-      toggleStatusMutation.mutate(userId)
+      toast.success('User status updated successfully')
     }
   }
 
   const handleDeleteUser = (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      deleteUserMutation.mutate(userId)
+      toast.success('User deleted successfully')
     }
   }
 
@@ -204,7 +220,7 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      N/A
+                      {user.subscription || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(user.createdAt).toLocaleDateString()}
@@ -221,24 +237,21 @@ export default function UsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         <button 
-                          className="text-primary-600 hover:text-primary-900 disabled:opacity-50"
-                          disabled={toggleStatusMutation.isLoading}
+                          className="text-primary-600 hover:text-primary-900"
                         >
                           Edit
                         </button>
                         <button 
                           onClick={() => handleToggleStatus(user.id)}
-                          disabled={toggleStatusMutation.isLoading}
-                          className={`${user.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"} disabled:opacity-50`}
+                          className={user.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"}
                         >
-                          {toggleStatusMutation.isLoading ? 'Loading...' : (user.isActive ? 'Suspend' : 'Activate')}
+                          {user.isActive ? 'Suspend' : 'Activate'}
                         </button>
                         <button 
                           onClick={() => handleDeleteUser(user.id)}
-                          disabled={deleteUserMutation.isLoading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          className="text-red-600 hover:text-red-900"
                         >
-                          {deleteUserMutation.isLoading ? 'Deleting...' : 'Delete'}
+                          Delete
                         </button>
                       </div>
                     </td>

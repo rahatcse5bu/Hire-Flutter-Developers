@@ -1,41 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-
-interface Subscription {
-  id: string
-  userId: string
-  userName: string
-  userEmail: string
-  plan: 'basic' | 'professional' | 'enterprise'
-  status: 'active' | 'cancelled' | 'expired' | 'paused'
-  startDate: string
-  endDate: string
-  amount: number
-  billingCycle: 'monthly' | 'yearly'
-  autoRenew: boolean
-}
-
-interface PlanStats {
-  name: string
-  count: number
-  revenue: number
-  growth: number
-}
+import AdminLayout from '../../components/AdminLayout'
 
 export default function SubscriptionsPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'cancelled' | 'expired' | 'paused'>('all')
   const [planFilter, setPlanFilter] = useState<'all' | 'basic' | 'professional' | 'enterprise'>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Mock data - replace with API calls
-  const planStats: PlanStats[] = [
-    { name: 'Basic', count: 450, revenue: 13450, growth: 8.2 },
-    { name: 'Professional', count: 320, revenue: 28800, growth: 15.6 },
-    { name: 'Enterprise', count: 86, revenue: 51600, growth: 23.1 }
-  ]
+  // Mock data for subscriptions
+  const stats = {
+    totalSubscriptions: 856,
+    subscriptionGrowth: 12.5,
+    activeSubscriptions: 720,
+    activeRate: 84.1,
+    totalMRR: 28450,
+    revenueGrowth: 18.3,
+    churnRate: 2.4,
+    churnChange: -0.8
+  }
 
-  const subscriptions: Subscription[] = [
+  const subscriptions = [
     {
       id: '1',
       userId: 'usr_1',
@@ -74,20 +59,13 @@ export default function SubscriptionsPage() {
       amount: 599.99,
       billingCycle: 'yearly',
       autoRenew: false
-    },
-    {
-      id: '4',
-      userId: 'usr_4',
-      userName: 'Dev Studio',
-      userEmail: 'contact@devstudio.com',
-      plan: 'professional',
-      status: 'cancelled',
-      startDate: '2023-11-01',
-      endDate: '2024-01-20',
-      amount: 89.99,
-      billingCycle: 'yearly',
-      autoRenew: false
     }
+  ]
+
+  const planStats = [
+    { name: 'Basic', count: 450, revenue: 13450, growth: 8.2 },
+    { name: 'Professional', count: 320, revenue: 28800, growth: 15.6 },
+    { name: 'Enterprise', count: 86, revenue: 51600, growth: 23.1 }
   ]
 
   const filteredSubscriptions = subscriptions.filter(sub => {
@@ -124,7 +102,8 @@ export default function SubscriptionsPage() {
     .reduce((sum, s) => sum + (s.billingCycle === 'monthly' ? s.amount : s.amount / 12), 0)
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
         <div className="flex gap-2">
@@ -137,26 +116,26 @@ export default function SubscriptionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="admin-card">
           <h3 className="text-sm font-medium text-gray-500">Total Subscriptions</h3>
-          <p className="text-2xl font-bold text-primary-600">{totalSubscriptions}</p>
-          <p className="text-sm text-gray-500 mt-1">+12.5% from last month</p>
+          <p className="text-2xl font-bold text-primary-600">{stats.totalSubscriptions || 0}</p>
+          <p className="text-sm text-gray-500 mt-1">+{stats.subscriptionGrowth || 0}% from last month</p>
         </div>
         
         <div className="admin-card">
           <h3 className="text-sm font-medium text-gray-500">Active Subscriptions</h3>
-          <p className="text-2xl font-bold text-green-600">{activeSubscriptions}</p>
-          <p className="text-sm text-gray-500 mt-1">{((activeSubscriptions/totalSubscriptions)*100).toFixed(1)}% active rate</p>
+          <p className="text-2xl font-bold text-green-600">{stats.activeSubscriptions || 0}</p>
+          <p className="text-sm text-gray-500 mt-1">{stats.activeRate || 0}% active rate</p>
         </div>
         
         <div className="admin-card">
           <h3 className="text-sm font-medium text-gray-500">Monthly Recurring Revenue</h3>
-          <p className="text-2xl font-bold text-green-600">${totalMRR.toFixed(0)}</p>
-          <p className="text-sm text-gray-500 mt-1">+18.3% from last month</p>
+          <p className="text-2xl font-bold text-green-600">${stats.totalMRR || 0}</p>
+          <p className="text-sm text-gray-500 mt-1">+{stats.revenueGrowth || 0}% from last month</p>
         </div>
         
         <div className="admin-card">
           <h3 className="text-sm font-medium text-gray-500">Churn Rate</h3>
-          <p className="text-2xl font-bold text-red-600">2.4%</p>
-          <p className="text-sm text-gray-500 mt-1">-0.8% from last month</p>
+          <p className="text-2xl font-bold text-red-600">{stats.churnRate || 0}%</p>
+          <p className="text-sm text-gray-500 mt-1">{stats.churnChange || 0}% from last month</p>
         </div>
       </div>
 
@@ -372,6 +351,7 @@ export default function SubscriptionsPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }

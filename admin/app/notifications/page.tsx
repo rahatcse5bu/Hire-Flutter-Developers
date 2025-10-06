@@ -1,29 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-
-interface Notification {
-  id: string
-  type: 'system' | 'user' | 'payment' | 'job' | 'security'
-  title: string
-  message: string
-  recipient: 'all' | 'developers' | 'recruiters' | 'admins' | 'specific'
-  recipients?: string[]
-  status: 'draft' | 'sent' | 'scheduled' | 'failed'
-  createdAt: string
-  scheduledAt?: string
-  sentAt?: string
-  openRate?: number
-  clickRate?: number
-}
+import AdminLayout from '../../components/AdminLayout'
 
 export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<'notifications' | 'compose' | 'templates'>('notifications')
   const [filter, setFilter] = useState<'all' | 'sent' | 'scheduled' | 'draft' | 'failed'>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Mock data - replace with API calls
-  const notifications: Notification[] = [
+  // Mock data for notifications
+  const stats = {
+    total: 1247,
+    unread: 23,
+    urgent: 5,
+    warning: 12,
+    info: 8
+  }
+
+  const notifications = [
     {
       id: '1',
       type: 'system',
@@ -57,15 +51,6 @@ export default function NotificationsPage() {
       status: 'scheduled',
       createdAt: '2024-01-15T16:00:00Z',
       scheduledAt: '2024-01-16T09:00:00Z'
-    },
-    {
-      id: '4',
-      type: 'payment',
-      title: 'Payment Processing Update',
-      message: 'We have updated our payment processing system for better security.',
-      recipient: 'recruiters',
-      status: 'draft',
-      createdAt: '2024-01-15T14:20:00Z'
     }
   ]
 
@@ -120,7 +105,8 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Notification Management</h1>
         <button 
@@ -161,22 +147,26 @@ export default function NotificationsPage() {
           {activeTab === 'notifications' && (
             <div className="space-y-4">
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <div className="bg-white rounded-lg border p-4">
-                  <h3 className="text-sm font-medium text-gray-500">Total Sent</h3>
-                  <p className="text-2xl font-bold text-green-600">1,247</p>
+                  <h3 className="text-sm font-medium text-gray-500">Total</h3>
+                  <p className="text-2xl font-bold text-primary-600">{stats.total || 0}</p>
                 </div>
                 <div className="bg-white rounded-lg border p-4">
-                  <h3 className="text-sm font-medium text-gray-500">Scheduled</h3>
-                  <p className="text-2xl font-bold text-blue-600">8</p>
+                  <h3 className="text-sm font-medium text-gray-500">Unread</h3>
+                  <p className="text-2xl font-bold text-green-600">{stats.unread || 0}</p>
                 </div>
                 <div className="bg-white rounded-lg border p-4">
-                  <h3 className="text-sm font-medium text-gray-500">Avg Open Rate</h3>
-                  <p className="text-2xl font-bold text-purple-600">78.5%</p>
+                  <h3 className="text-sm font-medium text-gray-500">Urgent</h3>
+                  <p className="text-2xl font-bold text-red-600">{stats.urgent || 0}</p>
                 </div>
                 <div className="bg-white rounded-lg border p-4">
-                  <h3 className="text-sm font-medium text-gray-500">Avg Click Rate</h3>
-                  <p className="text-2xl font-bold text-orange-600">23.7%</p>
+                  <h3 className="text-sm font-medium text-gray-500">Warnings</h3>
+                  <p className="text-2xl font-bold text-yellow-600">{stats.warning || 0}</p>
+                </div>
+                <div className="bg-white rounded-lg border p-4">
+                  <h3 className="text-sm font-medium text-gray-500">Info</h3>
+                  <p className="text-2xl font-bold text-blue-600">{stats.info || 0}</p>
                 </div>
               </div>
 
@@ -436,6 +426,7 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }

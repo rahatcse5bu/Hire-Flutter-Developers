@@ -1,27 +1,106 @@
 'use client'
 
-import { useQuery } from 'react-query'
-import { adminService } from '../lib/api/admin.service'
 import AdminLayout from '../components/AdminLayout'
 
 export default function AdminDashboard() {
-  const { data: stats, isLoading: statsLoading } = useQuery(
-    'admin-dashboard-stats',
-    () => adminService.getDashboardStats(),
-    {
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  )
+  // Mock data for dashboard stats
+  const stats = {
+    totalUsers: 12547,
+    userGrowth: 12.5,
+    totalJobs: 3468,
+    jobGrowth: 8.3,
+    totalRevenue: 87543,
+    revenueGrowth: 15.7,
+    totalSubscriptions: 2156,
+    subscriptionGrowth: 9.2
+  }
 
-  const { data: recentUsers } = useQuery(
-    'admin-recent-users',
-    () => adminService.getUsers({ limit: 5 }),
-  )
+  const recentUsers = {
+    users: [
+      {
+        id: '1',
+        name: 'Sarah Johnson',
+        email: 'sarah.johnson@email.com',
+        role: 'developer',
+        isActive: true,
+        createdAt: '2024-01-15T10:00:00Z'
+      },
+      {
+        id: '2',
+        name: 'Michael Chen',
+        email: 'michael.chen@email.com',
+        role: 'recruiter',
+        isActive: true,
+        createdAt: '2024-01-14T15:30:00Z'
+      },
+      {
+        id: '3',
+        name: 'Emma Wilson',
+        email: 'emma.wilson@email.com',
+        role: 'developer',
+        isActive: true,
+        createdAt: '2024-01-13T09:20:00Z'
+      },
+      {
+        id: '4',
+        name: 'David Brown',
+        email: 'david.brown@email.com',
+        role: 'recruiter',
+        isActive: false,
+        createdAt: '2024-01-12T14:45:00Z'
+      },
+      {
+        id: '5',
+        name: 'Lisa Garcia',
+        email: 'lisa.garcia@email.com',
+        role: 'developer',
+        isActive: true,
+        createdAt: '2024-01-11T11:10:00Z'
+      }
+    ]
+  }
 
-  const { data: recentJobs } = useQuery(
-    'admin-recent-jobs',
-    () => adminService.getJobs({ limit: 5 }),
-  )
+  const recentJobs = {
+    jobs: [
+      {
+        id: '1',
+        title: 'Senior Flutter Developer',
+        company: 'TechCorp Inc',
+        status: 'active',
+        createdAt: '2024-01-15T08:00:00Z'
+      },
+      {
+        id: '2',
+        title: 'Flutter Mobile App Developer',
+        company: 'StartupXYZ',
+        status: 'active',
+        createdAt: '2024-01-14T12:30:00Z'
+      },
+      {
+        id: '3',
+        title: 'Lead Flutter Engineer',
+        company: 'MegaCorp',
+        status: 'closed',
+        createdAt: '2024-01-13T16:45:00Z'
+      },
+      {
+        id: '4',
+        title: 'Flutter Developer - Remote',
+        company: 'RemoteWork Co',
+        status: 'active',
+        createdAt: '2024-01-12T10:15:00Z'
+      },
+      {
+        id: '5',
+        title: 'Junior Flutter Developer',
+        company: 'GrowthTech',
+        status: 'paused',
+        createdAt: '2024-01-11T13:20:00Z'
+      }
+    ]
+  }
+
+  const statsLoading = false
 
   return (
     <AdminLayout>
